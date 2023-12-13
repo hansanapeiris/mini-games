@@ -1,7 +1,7 @@
 """
     Tic-tac-toe game
 
-    Description: Made to practice using git and code
+    Description: Made to practice git and to code properly
 
     Author: Hansana Peiris
     Created: 13 Dec 2023
@@ -13,6 +13,7 @@ from time import sleep
 
 
 class Player:
+
     def __init__(self, token:str) -> None:
         self.token = token
         
@@ -39,18 +40,18 @@ class Board:
 
     class Slot:
         def __init__(self) -> None:
-            self.state = None
+            self.token = None
 
-        def __str__(self) -> str:
-            if self.state is None:
-                return '_'
-            return self.state
-        
-        def change_state(self, token:str) -> bool:
-            if self.state is not None:
+        def change_token(self, token:str) -> bool:
+            if self.token is not None:
                 return False
-            self.state = token
+            self.token = token
             return True
+        
+        def __str__(self) -> str:
+            if self.token is None:
+                return '_'
+            return self.token
 
     def __init__(self) -> None:
         self.slots = []
@@ -60,16 +61,105 @@ class Board:
 
         self.empty_slot_count = Board.SIZE ** 2
 
+    def check_for_wins(self) -> bool:
+        # check all rows
+        for row in self.slots:
+            count_x = 0
+            count_o = 0
+
+            for slot in row:
+                slot = str(slot)
+                if slot == 'X':
+                    count_x += 1
+                elif slot == 'O':
+                    count_o += 1
+            
+            if count_x == Board.SIZE:
+                print('X wins')
+                return True
+            elif count_o == Board.SIZE:
+                print('O wins')
+                return True
+
+        # check all columns
+        for index in range(Board.SIZE):
+            count_x = 0
+            count_o = 0
+
+            for row in self.slots:
+                slot = row[index]
+                slot = str(slot)
+                if slot == 'X':
+                    count_x += 1
+                elif slot == 'O':
+                    count_o += 1
+            
+            if count_x == Board.SIZE:
+                print('X wins')
+                return True
+            elif count_o == Board.SIZE:
+                print('O wins')
+                return True
+
+        # check diagonals
+        count_x = 0
+        count_o = 0
+        for i in range(Board.SIZE):
+            slot = self.slots[i][i]
+            slot = str(slot)
+            if slot == 'X':
+                count_x += 1
+            elif slot == 'O':
+                count_o += 1
+        if count_x == Board.SIZE:
+            print('X wins')
+            return True
+        elif count_o == Board.SIZE:
+            print('O wins')
+            return True
+        
+        count_x = 0
+        count_o = 0
+        for i in range(Board.SIZE):
+            slot = self.slots[i][i]
+            slot = str(slot)
+            if slot == 'X':
+                count_x += 1
+            elif slot == 'O':
+                count_o += 1
+        if count_x == Board.SIZE:
+            print('X wins')
+            return True
+        elif count_o == Board.SIZE:
+            print('O wins')
+            return True
+
+        count_x = 0
+        count_o = 0
+        for x, y in [(0,2), (1,1), (2,0)]:
+            slot = self.slots[x][y]
+            slot = str(slot)
+            if slot == 'X':
+                count_x += 1
+            elif slot == 'O':
+                count_o += 1
+        if count_x == Board.SIZE:
+            print('X wins')
+            return True
+        elif count_o == Board.SIZE:
+            print('O wins')
+            return True
+
+        return False
+
     def mark_slot(self, row_no: int, col_no: int, token: str) -> bool:
         slot: Board.Slot = self.slots[row_no - 1][col_no - 1]
-        success = slot.change_state(token)
+        success = slot.change_token(token)
 
         if success:
             self.empty_slot_count -= 1
 
         return success
-        
-
 
     def display(self) -> None:
         print(' ', end='')
@@ -100,6 +190,7 @@ class Game:
 
     def play(self) -> None:
         print("--GAME STARTED--")
+
         print('Player X goes first!')
         self.board.display()
 
@@ -126,6 +217,9 @@ class Game:
                 sleep(1.5)
 
             self.board.display()
+
+            if self.board.check_for_wins():
+                break
 
         print("--GAME OVER--")
             
