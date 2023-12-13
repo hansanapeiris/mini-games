@@ -1,31 +1,46 @@
+"""
+    Tic-tac-toe game
+
+    Description: Made to practice using git and code
+
+    Author: Hansana Peiris
+    Created: 13 Dec 2023
+
+    GitHub repository: https://github.com/hansanapeiris/mini-games
+"""
+
+from random import choice
+
 
 class Player:
-    # class variable
-    player_count = 0
-
-    def __init__(self, name:str = None) -> None:
-        if not name:
-            name = f'Player {Player.player_count + 1}'
-        self.name = name
-        Player.player_count += 1
-
-    def get_name(self) -> str:
-        return self.name
+    def __init__(self, token:str) -> None:
+        self.token = token
+        
+    def __str__(self) -> str:
+        return self.token
 
 class Slot:
     def __init__(self) -> None:
         self.state = None
 
     def __str__(self) -> str:
-        return '_'
+        if self.state is None:
+            return '_'
+        return self.state
+    
+    def change_state(self, token:str) -> bool:
+        if self.state is None:
+            self.state = token
+            return True
+        return False
 
 class Board:
-    def __init__(self, size:int = 3) -> None:
-        self.size = size
+    SIZE = 3
 
+    def __init__(self) -> None:
         self.slots = []
-        for i in range(size):
-            row = [Slot()] * size
+        for i in range(Board.SIZE):
+            row = [Slot() for _ in range(Board.SIZE)]
             self.slots.append(row)
 
     def display(self) -> None:
@@ -36,19 +51,34 @@ class Board:
             print()
 
 class Game:
-    MAX_PLAYER_COUNT = 2
 
     def __init__(self) -> None:
-        self.players = []
-        for _ in range(Game.MAX_PLAYER_COUNT):
-            self.players.append(Player(input('name: ')))
-        
-        for player in self.players:
-            print(player.get_name())
 
+        # initialise players
+        self.players = (Player('X'), Player('O'))
+
+        # initilise board
         self.board = Board()
 
-game = Game()
-print(Player.player_count)
+    def play(self) -> None:
+        print('X goes first!')
 
-print(game.board.display())
+        current_player_index = 0
+
+        while True:
+            self.board.display()
+
+            current_player = self.players[current_player_index]
+
+            print(f"Player {current_player}'s turn")
+            row = int(input('row: ')) - 1
+            col = int(input('col: ')) - 1
+            slot: Slot = self.board.slots[row][col]
+
+            slot.change_state(current_player.token)
+
+            current_player_index = not current_player_index
+
+if __name__ == "__main__":
+    game = Game()
+    game.play()
