@@ -9,7 +9,7 @@
     GitHub repository: https://github.com/hansanapeiris/mini-games
 """
 
-from random import choice
+from time import sleep
 
 
 class Player:
@@ -18,37 +18,75 @@ class Player:
         
     def __str__(self) -> str:
         return self.token
-
-class Slot:
-    def __init__(self) -> None:
-        self.state = None
-
-    def __str__(self) -> str:
-        if self.state is None:
-            return '_'
-        return self.state
     
-    def change_state(self, token:str) -> bool:
-        if self.state is None:
-            self.state = token
-            return True
-        return False
+    def get_tuple(self) -> tuple:
+        row:str = input('row: ')
+        while not row.isdigit():
+            print('invalid input format, try again!')
+            row:str = input('row: ')
+        row = int(row)
+
+        col:str = input('col: ')
+        while not col.isdigit():
+            print('invalid input format, try again!')
+            col:str = input('col: ')
+        col = int(col)
+
+        return (row, col)
 
 class Board:
     SIZE = 3
 
+    class Slot:
+        def __init__(self) -> None:
+            self.state = None
+
+        def __str__(self) -> str:
+            if self.state is None:
+                return '_'
+            return self.state
+        
+        def change_state(self, token:str) -> bool:
+            if self.state is not None:
+                return False
+            self.state = token
+            return True
+
     def __init__(self) -> None:
         self.slots = []
         for i in range(Board.SIZE):
-            row = [Slot() for _ in range(Board.SIZE)]
+            row = [Board.Slot() for _ in range(Board.SIZE)]
             self.slots.append(row)
 
+        self.empty_slot_count = Board.SIZE ** 2
+
+    def mark_slot(self, row_no: int, col_no: int, token: str) -> bool:
+        slot: Board.Slot = self.slots[row_no - 1][col_no - 1]
+        success = slot.change_state(token)
+
+        if success:
+            self.empty_slot_count -= 1
+
+        return success
+        
+
+
     def display(self) -> None:
-        for row in self.slots:
-            print('|', end='')
+        print(' ', end='')
+        for i in range(Board.SIZE):
+            print(f" {i + 1}", end='')
+        print()
+
+        for i, row in enumerate(self.slots):
+            print(f'{i + 1}|', end='')
             for slot in row:
                 print(f'{slot}|', end='')
-            print()
+            print(f'{i + 1}')
+        
+        print(' ', end='')
+        for i in range(Board.SIZE):
+            print(f" {i + 1}", end='')
+        print()
 
 class Game:
 
@@ -61,23 +99,36 @@ class Game:
         self.board = Board()
 
     def play(self) -> None:
-        print('X goes first!')
+        print("--GAME STARTED--")
+        print('Player X goes first!')
+        self.board.display()
 
         current_player_index = 0
 
-        while True:
-            self.board.display()
-
+        while self.board.empty_slot_count > 0:
             current_player = self.players[current_player_index]
 
             print(f"Player {current_player}'s turn")
-            row = int(input('row: ')) - 1
-            col = int(input('col: ')) - 1
-            slot: Slot = self.board.slots[row][col]
+            row, col = current_player.get_tuple()
+            while not ((1 <= row <= Board.SIZE) and (1 <= col <= Board.SIZE)):
+                print('out of range, try again!')
+                row, col = current_player.get_tuple()
+            
+            result = self.board.mark_slot(row, col, current_player.token)
 
-            slot.change_state(current_player.token)
+            if result:
+                # go to next player
+                current_player_index = not current_player_index
+            else:
+                # marking failed
+                print('slot already taken!!')
+                print(f"Player {current_player} try again!")
+                sleep(1.5)
 
-            current_player_index = not current_player_index
+            self.board.display()
+
+        print("--GAME OVER--")
+            
 
 if __name__ == "__main__":
     game = Game()
