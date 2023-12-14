@@ -17,18 +17,31 @@ class Player:
     def __str__(self) -> str:
         return self.token
     
-    def get_tuple(self) -> tuple:
-        row:str = input('row: ')
-        while not row.isdigit():
-            print('invalid input format, try again!')
-            row:str = input('row: ')
-        row = int(row)
+class Console:
+    @staticmethod
+    def get_row_col_tuple(low:int, high:int) -> tuple:
 
-        col:str = input('col: ')
-        while not col.isdigit():
-            print('invalid input format, try again!')
-            col:str = input('col: ')
-        col = int(col)
+        while True:
+            try:
+                row = int(input('row: '))
+
+                if (row < low) or (row > high):
+                    raise ValueError
+
+                break
+            except ValueError:
+                print('invalid input format/range, try again!')
+
+        while True:
+            try:
+                col = int(input('col: '))
+
+                if (col < low) or (col > high):
+                    raise ValueError
+                
+                break
+            except ValueError:
+                print('invalid input format/range, try again!')
 
         return (row, col)
 
@@ -150,10 +163,8 @@ class TicTacToeGame:
             current_player = self.players[current_player_index]
 
             print(f"Player {current_player}'s turn")
-            row, col = current_player.get_tuple()
-            while not ((1 <= row <= Board.SIZE) and (1 <= col <= Board.SIZE)):
-                print('out of range, try again!')
-                row, col = current_player.get_tuple()
+
+            row, col = Console.get_row_col_tuple(low=1, high=Board.SIZE)
             
             result = self.board.mark_slot(row, col, current_player.token)
 
