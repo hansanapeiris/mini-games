@@ -9,9 +9,6 @@
     GitHub repository: https://github.com/hansanapeiris/mini-games
 """
 
-from time import sleep
-
-
 class Player:
 
     def __init__(self, token:str) -> None:
@@ -61,94 +58,47 @@ class Board:
 
         self.empty_slot_count = Board.SIZE ** 2
 
-    def check_for_wins(self) -> bool:
-        # check all rows
-        for row in self.slots:
-            count_x = 0
-            count_o = 0
+    def get_token(self, row_index: int, col_index: int) -> str:
+        return str(self.slots[row_index][col_index])
 
-            for slot in row:
-                slot = str(slot)
-                if slot == 'X':
-                    count_x += 1
-                elif slot == 'O':
-                    count_o += 1
-            
-            if count_x == Board.SIZE:
-                print('X wins')
-                return True
-            elif count_o == Board.SIZE:
-                print('O wins')
-                return True
-
-        # check all columns
-        for index in range(Board.SIZE):
-            count_x = 0
-            count_o = 0
-
-            for row in self.slots:
-                slot = row[index]
-                slot = str(slot)
-                if slot == 'X':
-                    count_x += 1
-                elif slot == 'O':
-                    count_o += 1
-            
-            if count_x == Board.SIZE:
-                print('X wins')
-                return True
-            elif count_o == Board.SIZE:
-                print('O wins')
-                return True
-
-        # check diagonals
-        count_x = 0
-        count_o = 0
-        for i in range(Board.SIZE):
-            slot = self.slots[i][i]
-            slot = str(slot)
-            if slot == 'X':
-                count_x += 1
-            elif slot == 'O':
-                count_o += 1
-        if count_x == Board.SIZE:
-            print('X wins')
+    def check_for_wins(self, row_no: int, col_no: int, token: str) -> bool:
+        # check row
+        row_index = row_no - 1
+        count = 0
+        for col in range(Board.SIZE):
+            if self.get_token(row_index, col) == token:
+                count += 1
+        if count == Board.SIZE:
             return True
-        elif count_o == Board.SIZE:
-            print('O wins')
+
+        # check column
+        col_index = col_no - 1
+        count = 0
+        for row in range(Board.SIZE):
+            if self.get_token(row, col_index) == token:
+                count += 1
+        if count == Board.SIZE:
             return True
+
+        # if in diagonal - check
         
-        count_x = 0
-        count_o = 0
-        for i in range(Board.SIZE):
-            slot = self.slots[i][i]
-            slot = str(slot)
-            if slot == 'X':
-                count_x += 1
-            elif slot == 'O':
-                count_o += 1
-        if count_x == Board.SIZE:
-            print('X wins')
-            return True
-        elif count_o == Board.SIZE:
-            print('O wins')
-            return True
-
-        count_x = 0
-        count_o = 0
-        for x, y in [(0,2), (1,1), (2,0)]:
-            slot = self.slots[x][y]
-            slot = str(slot)
-            if slot == 'X':
-                count_x += 1
-            elif slot == 'O':
-                count_o += 1
-        if count_x == Board.SIZE:
-            print('X wins')
-            return True
-        elif count_o == Board.SIZE:
-            print('O wins')
-            return True
+        # right-diagonal
+        if row_index == col_index:
+            count = 0
+            for row, col in ((0,0), (1,1), (2,2)):
+                if self.get_token(row, col) == token:
+                    count += 1
+            if count == Board.SIZE:
+                return True
+            
+        # left-diagonal
+        if row_index + col_index == Board.SIZE:
+            count = 0
+            for row, col in ((2,0), (1,1), (0,2)):
+                if self.get_token(row, col) == token:
+                    count += 1
+            if count == Board.SIZE:
+                return True
 
         return False
 
@@ -178,7 +128,7 @@ class Board:
             print(f" {i + 1}", end='')
         print()
 
-class Game:
+class TicTacToeGame:
 
     def __init__(self) -> None:
 
@@ -214,16 +164,19 @@ class Game:
                 # marking failed
                 print('slot already taken!!')
                 print(f"Player {current_player} try again!")
-                sleep(1.5)
 
             self.board.display()
 
-            if self.board.check_for_wins():
+            if self.board.check_for_wins(row, col, current_player.token):
+                print(f"Player {current_player} WINS!")
                 break
+
+        else:
+            print("--NO WINNERS--")
 
         print("--GAME OVER--")
             
 
 if __name__ == "__main__":
-    game = Game()
+    game = TicTacToeGame()
     game.play()
