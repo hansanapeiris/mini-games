@@ -52,23 +52,30 @@ class Board:
             return self.token
 
     def __init__(self, size:int) -> None:
-        self.slots = []
-        for _ in range(size):
-            row = [Board.Slot() for _ in range(size)]
-            self.slots.append(row)
+        self.slots = tuple(tuple(Board.Slot() for _ in range(size)) for _ in range(size))
 
         self.empty_slot_count = size ** 2
 
-    # def __call__(self, row:int, col:int) -> Slot:
-    #     return self.slots[row][col]
+        right_diagonal = []
+        for index in range(size):
+            right_diagonal.append(self(index, index))
+        self.right_diagonal = tuple(right_diagonal)
 
-    def are_slots_available(self) -> bool:
-        return self.empty_slot_count > 0
+        left_diagonal = []
+        for index in range(size):
+            left_diagonal.append(self(index, (size-index - 1)))
+        self.left_diagonal = tuple(left_diagonal)
+
+    def __call__(self, row:int, col:int) -> Slot:
+        return self.slots[row][col]
     
     def check_for_wins(self, row_no: int, col_no: int) -> bool:
         
-        def has_same_tokens(three_slots: tuple[Board.Slot, Board.Slot, Board.Slot]) -> bool:
-            return three_slots[0].token == three_slots[1].token == three_slots[2].token
+        def has_same_tokens(slots: tuple[Board.Slot, ...]) -> bool:
+            result = True
+            for i in range(len(slots) - 1):
+                result = result * (slots[i].token == slots[i+1].token)
+            return bool(result)
 
         marked_row_index = row_no - 1
         marked_col_index = col_no - 1
@@ -80,66 +87,30 @@ class Board:
         # - list wrap around (negative indices)
 
         # check row
-        starting_col_indices_for_truples = (marked_col_index-2, marked_col_index-1, marked_col_index)
-        for col in starting_col_indices_for_truples:
-            try:
-                if col < 0:
-                    continue
-
-                slot_truple = (self.slots[marked_row_index][col], self.slots[marked_row_index][col+1], self.slots[marked_row_index][col+2])
-                if has_same_tokens(slot_truple):
-                    print("ROW WIN")
-                    return True
-            except IndexError:
-                continue
+        marked_row = self.slots[marked_row_index]
+        if has_same_tokens(marked_row):
+            print('ROW WIN')
+            return True
 
         # check column
-        starting_row_indices_for_truples = (marked_row_index-2, marked_row_index-1, marked_row_index)
-        for row in starting_row_indices_for_truples:
-            try:
-                if row < 0:
-                    continue
-                
-                slot_truple = (self.slots[row][marked_col_index], self.slots[row+1][marked_col_index], self.slots[row+2][marked_col_index])
-                if has_same_tokens(slot_truple):
-                    print("COLUMN WIN")
-                    return True
-            except IndexError:
-                continue
+        marked_col = []
+        for row in self.slots:
+            marked_col.append(row[marked_col_index])
+        if has_same_tokens(marked_col):
+            print('COLUMN WIN')
+            return True
 
         # check right-diagonal
-        starting_slot_location_for_truples = ( (marked_row_index-2, marked_col_index-2),
-                                   (marked_row_index-1, marked_col_index-1),
-                                   (marked_row_index, marked_col_index) )
-        
-        for row, col in starting_slot_location_for_truples:
-            try:
-                if row < 0 or col < 0:
-                    continue
-                
-                slot_truple = (self.slots[row][col], self.slots[row+1][col+1], self.slots[row+2][col+2])
-                if has_same_tokens(slot_truple):
-                    print("RIGHT-DIAGONAL WIN")
-                    return True
-            except IndexError:
-                continue
+        if marked_row_index == marked_col_index:
+            if has_same_tokens(self.right_diagonal):
+                print('R-DIAGONAL WIN')
+                return True
 
         # check left-diagonal
-        starting_slot_location_for_truples = ( (marked_row_index+2, marked_col_index-2),
-                                   (marked_row_index+1, marked_col_index-1),
-                                   (marked_row_index, marked_col_index) )
-        
-        for row, col in starting_slot_location_for_truples:
-            try:
-                if row < 0 or col < 0:
-                    continue
-                
-                slot_truple = (self.slots[row][col], self.slots[row-1][col+1], self.slots[row-2][col+2])
-                if has_same_tokens(slot_truple):
-                    print("LEFT-DIAGONAL WIN")
-                    return True
-            except IndexError:
-                continue
+        if marked_row_index + marked_col_index == len(self.slots):
+            if has_same_tokens(self.left_diagonal):
+                print('R-DIAGONAL WIN')
+                return True
 
         return False
 
@@ -187,16 +158,18 @@ class TicTacToeGame:
         print("--GAME STARTED--")
         print('Player X goes first!')
 
+        board_size = len(self.board.slots)
+
         current_player_index = 0
 
-        while self.board.are_slots_available():
+        while self.board.empty_slot_count > 0:
             self.board.display()
             current_player = self.players[current_player_index]
 
             print(f"Player {current_player}'s turn")
 
-            row_no = Console.get_int_in_range(1, len(self.board.slots), "row")
-            col_no = Console.get_int_in_range(1, len(self.board.slots), "col")
+            row_no = Console.get_int_in_range(1, board_size, "row")
+            col_no = Console.get_int_in_range(1, board_size, "col")
             
             result = self.board.mark_slot(row_no, col_no, current_player.token)
 
@@ -206,6 +179,7 @@ class TicTacToeGame:
                 current_player_index = not current_player_index
 
                 if self.board.check_for_wins(row_no, col_no):
+                    self.board.display()
                     print(f"Player {current_player} WINS!")
                     break
             else:
@@ -216,7 +190,6 @@ class TicTacToeGame:
         else:
             print("\n--NO WINNERS--")
 
-        self.board.display()
         print("--GAME OVER--")
 
 
