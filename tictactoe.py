@@ -20,7 +20,7 @@ class Player:
 
 class Console:
     @staticmethod
-    def get_int_in_range(low:int, high:int, prompt_for: str = "value") -> int:
+    def get_int_in_range(low:int = 0, high:int = float('inf'), prompt_for: str = "value") -> int:
         while True:
             try:
                 value = int(input(f'{prompt_for}: '))
@@ -30,12 +30,6 @@ class Console:
             except ValueError:
                 print('invalid input format/range, try again!')
         return value
-
-    @staticmethod
-    def get_two_ints_in_range(low:int, high:int, prompt1: str = "value1", prompt2: str = "value2") -> tuple:
-        row = Console.get_int_in_range(low, high, prompt1)
-        column = Console.get_int_in_range(low, high, prompt2)
-        return (row, column)
 
 
 class Board:
@@ -201,7 +195,8 @@ class TicTacToeGame:
 
             print(f"Player {current_player}'s turn")
 
-            row_no, col_no = Console.get_two_ints_in_range(low=1, high=len(self.board.slots), prompt1="row", prompt2="col")
+            row_no = Console.get_int_in_range(1, len(self.board.slots), "row")
+            col_no = Console.get_int_in_range(1, len(self.board.slots), "col")
             
             result = self.board.mark_slot(row_no, col_no, current_player.token)
 
@@ -211,17 +206,17 @@ class TicTacToeGame:
                 current_player_index = not current_player_index
 
                 if self.board.check_for_wins(row_no, col_no):
-                    self.board.display()
                     print(f"Player {current_player} WINS!")
                     break
             else:
                 # marking failed
-                print('slot already taken!!')
+                print(f'({row_no}, {col_no}) already marked!!')
                 print(f"Player {current_player} try again!")
 
         else:
-            print("--NO WINNERS--")
+            print("\n--NO WINNERS--")
 
+        self.board.display()
         print("--GAME OVER--")
 
 
