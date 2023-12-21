@@ -1,10 +1,11 @@
 """
     Tic-tac-toe game
 
-    Description: Made to practice git and to code properly
+    Description: Two players. 3x3 to 9x9 board. Form a line of tokens (horizontally, 
+        vertically or diagonally) of side length of the chosen board to win!
 
     Author: Hansana Peiris
-    Created: 13 Dec 2023
+    Created: 13 December 2023
 
     GitHub repository: https://github.com/hansanapeiris/mini-games
 """
@@ -58,12 +59,12 @@ class Board:
 
         right_diagonal = []
         for index in range(size):
-            right_diagonal.append(self(index, index))
+            right_diagonal.append(self.slots[index][index])
         self.right_diagonal = tuple(right_diagonal)
 
         left_diagonal = []
         for index in range(size):
-            left_diagonal.append(self(index, (size-index - 1)))
+            left_diagonal.append(self.slots[index][size - index - 1])
         self.left_diagonal = tuple(left_diagonal)
 
     def __call__(self, row:int, col:int) -> Slot:
@@ -72,19 +73,10 @@ class Board:
     def check_for_wins(self, row_no: int, col_no: int) -> bool:
         
         def has_same_tokens(slots: tuple[Board.Slot, ...]) -> bool:
-            result = True
-            for i in range(len(slots) - 1):
-                result = result * (slots[i].token == slots[i+1].token)
-            return bool(result)
+            return all(slots[i].token == slots[i + 1].token for i in range(len(slots) - 1))
 
         marked_row_index = row_no - 1
         marked_col_index = col_no - 1
-
-        # to win, the token must have two pre/adjacent/post copies - Truple
-
-        # error handles
-        # - IndexErrors (out of range)
-        # - list wrap around (negative indices)
 
         # check row
         marked_row = self.slots[marked_row_index]
@@ -107,9 +99,9 @@ class Board:
                 return True
 
         # check left-diagonal
-        if marked_row_index + marked_col_index == len(self.slots):
+        if marked_row_index + marked_col_index == len(self.slots) - 1:
             if has_same_tokens(self.left_diagonal):
-                print('R-DIAGONAL WIN')
+                print('L-DIAGONAL WIN')
                 return True
 
         return False
